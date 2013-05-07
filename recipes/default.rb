@@ -1,20 +1,21 @@
 # send message to dashboard
 ey_cloud_report do
-  message "install docsplit and prerequisites"
+  message "installing docsplit and prerequisites"
 end
 
 # prerequisite packages
-packages = {
-  'media-gfx/graphicsmagick' => '~1.3.5',
-  'app-text/poppler' => '~0.10.0',
-  'app-text/poppler-data' => '0.2.0',
-  'app-text/tesseract' => '~3.02',
-  'app-text/pdftk-bin' => '~1.44',
-  'app-office/libreoffice-bin' => '~3.3.0-r1'
-}
+packages = [
+  ['media-libs/leptonica', '~1.68'],
+  ['media-gfx/graphicsmagick', '~1.3.5'],
+  ['app-text/poppler', '~0.10.0'],
+  ['app-text/poppler-data', '0.2.0'],
+  ['app-text/tesseract', '~3.02'],
+  ['app-text/pdftk-bin', '~1.44'],
+  ['app-office/libreoffice-bin', '~3.3.0-r1']
+]
 
 # install all prerequisites
-packages.each do |package, version|
+packages.each do |(package, version)|
   # unmask package if needed
   if version[/^~/]
     version = version[/[^~]+$/]
@@ -23,9 +24,18 @@ packages.each do |package, version|
     end
   end
   
+  # send message to dashboard
+  ey_cloud_report do
+    message "installing #{package} #{version}"
+  end
+  
   # install package
-  package(package) do
-    version(version)
+  if package == "media-gfx/graphicsmagick"
+    execute "USE='-openmp -imagemagick' emerge #{package}"
+  else
+    package(package) do
+      version(version)
+    end
   end
 end
 
